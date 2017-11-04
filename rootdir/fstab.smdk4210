@@ -14,5 +14,11 @@
 /dev/block/platform/dw_mmc/by-name/SBL2		/sbl2		emmc	defaults	defaults
 
 # external sd and otg
-/devices/platform/s3c-sdhci.2/mmc_host* 	auto	auto	defaults	voldmanaged=sdcard1:auto,encryptable=userdata
-/devices/platform/s5p-ehci/usb*			auto	auto	defaults	voldmanaged=usbdisk0:auto
+/devices/platform/s3c-sdhci.2/mmc_host*    	auto    	auto    defaults	voldmanaged=sdcard1:auto,encryptable=userdata
+/devices/platform/s5p-ehci/usb*			auto		auto	defaults	voldmanaged=usbdisk0:auto
+
+# zRAM
+/dev/block/zram0                            	none		swap	defaults      	zramsize=268435456,zramstreams=2
+
+
+

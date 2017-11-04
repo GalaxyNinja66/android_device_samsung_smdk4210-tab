@@ -1,6 +1,15 @@
 import init.smdk4210.usb.rc
 import init.smdk4210.bt.rc
 
+on early-init
+    write /sys/kernel/mm/ksm/pages_to_scan 100
+    write /sys/kernel/mm/ksm/sleep_millisecs 500
+    write /sys/kernel/mm/ksm/run 1
+
+    write /sys/block/mmcblk0/bdi/read_ahead_kb 1024
+
+
+
 on init
     export LD_PRELOAD "/system/lib/libsamsung_symbols.so"
 
@@ -17,6 +26,13 @@ on init
 
 on fs
     mount_all /fstab.smdk4210
+    swapon_all /fstab.smdk4210
+
+
+#   Use lz4 for zRam algorithm
+    write /sys/block/zram0/comp_algorithm lz4
+    write /proc/sys/vm/page-cluster 0
+
 
     #setprop ro.crypto.fuse_sdcard true
 
@@ -36,6 +52,13 @@ on fs
     # Permissions for IR_LED when line test
     chown system system /sys/class/sec/sec_ir/ir_send
     chown system system /sys/class/sec/sec_ir_test/ir_send_test
+
+
+#   permissions for MTP device node
+    chmod 0777 /dev/mtp_usb
+    restorecon /dev/mtp_usb
+    chmod 0777 /dev/usb_accessory
+    restorecon /dev/usb_accessory
 
     # wifi
     mkdir /data/misc/dhcp         0770 dhcp  dhcp

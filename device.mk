@@ -18,8 +18,9 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 $(call inherit-product-if-exists, vendor/samsung/smdk4210-tab/vendor.mk)
 
 # include a bunch of resources
-PRODUCT_AAPT_CONFIG := normal large xlarge mdpi tvdpi hdpi
-PRODUCT_LOCALES += mdpi tvdpi hdpi
+PRODUCT_AAPT_CONFIG := normal
+PRODUCT_AAPT_PREF_CONFIG := xhdpi
+PRODUCT_LOCALES += xhdpi
 
 # rootdir files
 PRODUCT_COPY_FILES += \
@@ -31,6 +32,17 @@ PRODUCT_COPY_FILES += \
 # recovery rootdir
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/init.recovery.smdk4210.rc:root/init.recovery.smdk4210.rc
+
+# codecs
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/etc/media_codecs.xml:system/etc/media_codecs.xml \
+    $(LOCAL_PATH)/configs/etc/media_profiles.xml:system/etc/media_profiles.xml \
+    hardware/samsung/exynos3/s5pc110/sec_mm/sec_omx/sec_omx_core/secomxregistry:system/etc/secomxregistry \
+    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/etc/media_codecs_google_telephony.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_video_le.xml:system/etc/media_codecs_google_video_le.xml
+
+
 
 # Audio @daniel, move here
 PRODUCT_COPY_FILES += \
@@ -51,6 +63,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     wifi.interface=wlan0 \
     wifi.supplicant_scan_interval=80 \
     ro.disableWifiApFirmwareReload=true
+
 
 # PerformanceControl defaults
 PRODUCT_COPY_FILES += \
@@ -151,6 +164,7 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
     frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
     frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
+    frameworks/native/data/etc/android.hardware.opengles.aep.xml:system/etc/permissions/android.hardware.opengles.aep.xml \
     frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml \
     frameworks/native/data/etc/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
     frameworks/native/data/etc/android.hardware.ethernet.xml:system/etc/permissions/android.hardware.ethernet.xml
@@ -174,12 +188,31 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Graphics
 PRODUCT_PROPERTY_OVERRIDES += \
-    ro.zygote.disable_gl_preload=true \
-    ro.opengles.version=196609 \
+    ro.opengles.version= 131072 \
     hwui.render_dirty_regions=false \
     ro.bq.gpu_to_cpu_unsupported=1 \
     drm.service.enable=true \
-    persist.panel.orientation=270
+    persist.panel.orientation=270 \
+    ro.hwui.disable_scissor_opt=true \
+    ro.zygote.disable_gl_preload=true \
+
+# Graphics
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    ro.zygote.disable_gl_preload=true \
+#    ro.opengles.version=196609 \
+#    hwui.render_dirty_regions=false \
+#    ro.bq.gpu_to_cpu_unsupported=1 \
+#    drm.service.enable=true \
+#    persist.panel.orientation=270
+
+# Surface
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.sf.lcd_density=202
+
+# Gello Browser
+PRODUCT_PACKAGES += \
+	Gello
+
 
 PRODUCT_TAGS += dalvik.gc.type-precise
 
@@ -187,10 +220,6 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp,adb \
     persist.sys.root_access=3
-
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/etc/media_profiles.xml:system/etc/media_profiles.xml \
-    $(LOCAL_PATH)/configs/etc/media_codecs.xml:system/etc/media_codecs.xml
 
 # Feature live wallpaper
 PRODUCT_COPY_FILES += \
@@ -206,3 +235,124 @@ $(call inherit-product, frameworks/native/build/tablet-7in-hdpi-1024-dalvik-heap
 # Include exynos4 platform specific parts
 TARGET_HAL_PATH := hardware/samsung/exynos4/hal
 TARGET_OMX_PATH := hardware/samsung/exynos/multimedia/openmax
+
+
+
+# Services
+PRODUCT_PROPERTY_OVERRIDES += \
+    config.disable_atlas=true
+
+# Low RAM
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.config.low_ram=true \
+    ro.sys.fw.bg_apps_limit=12 \
+    ro.config.max_starting_bg=8 \
+    dalvik.vm.jit.codecachesize=0
+
+
+
+# Extended JNI checks
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.kernel.android.checkjni=0 \
+    dalvik.vm.checkjni=false
+
+
+# Dalvik
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.dex2oat-Xms=8m \
+    dalvik.vm.dex2oat-Xmx=96m \
+    dalvik.vm.image-dex2oat-Xms=48m \
+    dalvik.vm.image-dex2oat-Xmx=48m \
+    dalvik.vm.dex2oat-flags=--no-watch-dog \
+    dalvik.vm.dex2oat-filter=interpret-only \
+    dalvik.vm.image-dex2oat-filter=speed \
+    dalvik.vm.dexopt-flag=o=y,m=y
+
+# Dalvik
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    dalvik.vm.debug.alloc=0 \
+#    dalvik.vm.heapstartsize=5m \
+#    dalvik.vm.heapgrowthlimit=48m \
+#    dalvik.vm.heapsize=128m \
+#    dalvik.vm.heaptargetutilization=0.75 \
+#    dalvik.vm.heaputilization=0.25 \
+#    dalvik.vm.heapminfree=512k \
+#    dalvik.vm.heapmaxfree=2m \
+#    dalvik.vm.lockprof.threshold=500 \
+#    dalvik.vm.dexopt-flags=o=y,m=y,v=n \
+#    dalvik.vm.execution-mode=int:jit \
+#    dalvik.vm.verify-bytecode=true \
+#    dalvik.vm.jmiopts=forcecopy \
+#    persist.sys.dalvik.vm.lib=libdvm.so \
+#    dalvik.vm.stack-trace-file=/data/anr/traces.txt
+
+# Force dex2oat to not use swap file
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.dex2oat-swap=false
+ 
+
+# Article on Heap sizes
+# https://01.org/android-ia/user-guides/android-memory-tuning-android-5.0-and-5.1
+#
+# Davlik
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.heapstartsize=5m \
+    dalvik.vm.heapgrowthlimit=64m \
+    dalvik.vm.heapsize=320m \
+    dalvik.vm.heapminfree=512k \
+    dalvik.vm.heapmaxfree=4m
+
+
+
+# Juwe11 script for tweaking
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    vm.swappiness=50 \
+#    vm.vfs_cache_pressure=10 \
+#    vm.dirty_expire_centisecs=500 \
+#    vm.dirty_writeback_centisecs=1000 \
+#    vm.dirty_ratio=90 \
+#    vm.dirty_backgroud_ratio=5
+
+# Media
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.sys.media.legacy-drm=1 \
+    media.stagefright.use-awesome=true \
+    persist.sys.NV_FPSLIMIT=60  \
+
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    ro.max.fling_velocity=12000 \ 
+#    ro.min.fling_velocity=8000 \
+#    ro.secure=0 \
+#    persist.sys.purgeable_assets=1 \ 
+#    persist.sys.use_dithering=1 \
+#    persist.sys.NV_FPSLIMIT=60 \
+#    debug.performance.tuning=1 \
+#    debug.kill_allocating_task=0 \
+#    windowsmgr.max_events_per_sec=84 \
+
+
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    persist.service.pcsync.enable=0 \
+#    persist.service.lgospd.enable=0 \
+#    ro.config.hw_quickpoweron=true \
+#    windowsmgr.max_events_per_sec=150 \
+#    pm.sleep_mode=1 \
+
+# ART
+#PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
+#    --compiler-filter=interpret-only
+
+# Decrease boot time
+#PRODUCT_PROPERTY_OVERRIDES := \ 
+#    persist.sys.shutdown.mode=hibernate \
+#    dev.bootcomplete=0
+
+
+# Render UI with GPU
+#PRODUCT_PROPERTY_OVERRIDES := \
+#    debug.sf.hw=1
+
+
+
+
+

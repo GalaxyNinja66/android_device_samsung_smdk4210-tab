@@ -28,6 +28,10 @@
 # bluetooth
 /dev/ttySAC0              0666   bluetooth  bluetooth
 
+# for mtp
+/dev/usb_accessory        0664    system    system
+/dev/mtp_usb              0664    system    system
+
 # gps
 /dev/ttySAC1              0660   root       system
 
