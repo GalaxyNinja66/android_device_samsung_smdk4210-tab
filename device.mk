@@ -18,9 +18,13 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 $(call inherit-product, vendor/cm/config/common_full_tablet_wifionly.mk)
 $(call inherit-product-if-exists, vendor/samsung/smdk4210-tab/vendor.mk)
 
+# exclude live wallpapers
+TARGET_EXCLUDE_LIVEWALLPAPERS := true
+
 # include a bunch of resources
-PRODUCT_AAPT_CONFIG := normal large xlarge mdpi tvdpi hdpi
-PRODUCT_LOCALES += mdpi tvdpi hdpi
+PRODUCT_AAPT_CONFIG := normal
+PRODUCT_AAPT_PREF_CONFIG := xhdpi
+PRODUCT_LOCALES += xhdpi
 
 # rootdir files
 PRODUCT_COPY_FILES += \
@@ -104,21 +108,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libsecmfcapi
 
-# OMX
-PRODUCT_PACKAGES += \
-    libstagefrighthw \
-    libseccscapi \
-    libsecbasecomponent \
-    libsecosal \
-    libSEC_OMX_Resourcemanager \
-    libSEC_OMX_Core \
-    libSEC_OMX_Vdec \
-    libOMX.SEC.AVC.Decoder \
-    libOMX.SEC.M4V.Decoder \
-    libOMX.SEC.WMV.Decoder \
-    libSEC_OMX_Venc \
-    libOMX.SEC.AVC.Encoder \
-    libOMX.SEC.M4V.Encoder \
+
 
 # Filesystem management tools
 PRODUCT_PACKAGES += \
@@ -160,11 +150,20 @@ PRODUCT_CHARACTERISTICS := tablet
 
 # Graphics
 PRODUCT_PROPERTY_OVERRIDES += \
-    ro.zygote.disable_gl_preload=true \
-    ro.opengles.version=196609 \
-    hwui.render_dirty_regions=false \
-    ro.bq.gpu_to_cpu_unsupported=1 \
     drm.service.enable=true \
+
+# ADB
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    ro.adb.secure=0
+
+
+# Graphics
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.opengles.version=131072 \
+    ro.zygote.disable_gl_preload=true \
+    ro.zygote=zygote32 \
+    ro.bq.gpu_to_cpu_unsupported=1 \
+    debug.hwui.render_dirty_regions=false \
     persist.panel.orientation=270
 
 PRODUCT_TAGS += dalvik.gc.type-precise
@@ -175,20 +174,150 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.isUsbOtgEnabled=true \
     persist.sys.root_access=3
 
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/etc/media_profiles.xml:system/etc/media_profiles.xml \
-    $(LOCAL_PATH)/configs/etc/media_codecs.xml:system/etc/media_codecs.xml
 
-# Feature live wallpaper
-PRODUCT_COPY_FILES += \
-    packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:system/etc/permissions/android.software.live_wallpaper.xml
-
+# OMX
 PRODUCT_PACKAGES += \
-    LiveWallpapers \
-    LiveWallpapersPicker \
-    VisualizationWallpapers
+    libstagefrighthw \
+    libseccscapi \
+    libsecbasecomponent \
+    libsecosal \
+    libSEC_OMX_Resourcemanager \
+    libSEC_OMX_Core \
+    libSEC_OMX_Vdec \
+    libOMX.SEC.AVC.Decoder \
+    libOMX.SEC.M4V.Decoder \
+    libOMX.SEC.WMV.Decoder \
+    libOMX.SEC.AVC.Encoder \
+    libSEC_OMX_Venc \
+    libOMX.SEC.M4V.Encoder
 
-$(call inherit-product, frameworks/native/build/tablet-7in-hdpi-1024-dalvik-heap.mk)
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/etc/media_codecs.xml:system/etc/media_codecs.xml \
+    $(LOCAL_PATH)/configs/etc/media_profiles.xml:system/etc/media_profiles.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/etc/media_codecs_google_telephony.xml
+#    frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml
+
+# Netflix hack
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/etc/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml
+
+    
+
+# Low RAM
+TARGET_BOOTANIMATION_TEXTURE_CACHE := false
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    config.disable_atlas=true \
+    persist.sys.purgeable_assets=1 \
+    persist.sys.force_highendgfx=true \
+    persist.sys.prefer_16bpp=1
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.config.low_ram=true 		# w/o: 250MB RAM
+    dalvik.vm.jit.codecachesize=0 \
+    ro.sys.fw.bg_apps_limit=3 \ # Reduce background apps limit on low-tier devices
+    ro.config.max_starting_bg=3  # Set max background services
+
+
+# Extended JNI checks
+PRODUCT_PROPERTY_OVERRIDES += \
+   ro.kernel.android.checkjni=0 \
+   dalvik.vm.checkjni=false \
+   ro.kernel.checkjni=0
+
+PRODUCT_PROPERTY_OVERRIDES += \
+   ro.HOME_APP_ADJ=1 \
+   ro.config.hw_quickpoweron=true \
+   persist.android.strictmode=0
+
+# Dalvik
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.image-dex2oat-Xms=64m \
+    dalvik.vm.image-dex2oat-Xmx=64m \
+    dalvik.vm.dex2oat-Xms=64m \
+    dalvik.vm.dex2oat-Xmx=512m \
+    dalvik.vm.dex2oat-filter=interpret-only \
+    dalvik.vm.image-dex2oat-filter=speed \
+    ro.dalvik.vm.native.bridge=0 \
+    dalvik.vm.lockprof.threshold=500 \
+#    dalvik.vm.dexopt-data-only=1 \
+#    dalvik.vm.usejit=true \
+#    dalvik.vm.usejitprofiles=true \
+#    dalvik.vm.execution-mode=int:jit \
+#    dalvik.vm.appimageformat=lz4 \
+#    debug.atrace.tags.enableflags=0
+#    dalvik.vm.dex2oat-flags=--no-watch-dog
+#    dalvik.vm.dexopt-flags=v=n,o=a,u=y \
+#    davlik.vm.verify-bytecode=false
+
+# Dalvik
+PRODUCT_PROPERTY_OVERRIDES += \
+pm.dexopt.first-boot=interpret-only \
+pm.dexopt.boot=verify-profile \
+pm.dexopt.install=interpret-only \
+pm.dexopt.bg-dexopt=speed-profile \
+pm.dexopt.ab-ota=speed-profile \
+pm.dexopt.nsys-library=speed \
+pm.dexopt.shared-apk=speed \
+pm.dexopt.forced-dexopt=speed \
+pm.dexopt.core-app=speed
+
+
+# sleep
+#PRODUCT_PROPERTY_OVERRIDES += \
+#power.saving.mode=1 \
+#ro.config.hw_power_saving=true
+
+# ART
+#PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
+#    --compiler-filter=interpret-only
+#$(call add-product-dex-preopt-module-config,services,--compiler-filter=speed)
+
+# Force dex2oat to not use swap file
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.dex2oat-swap=false
+
+# Media
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    persist.sys.media.legacy-drm=1 \
+#    media.stagefright.use-awesome=true \
+#    persist.sys.NV_FPSLIMIT=60  \
+
+#$(call inherit-product, frameworks/native/build/tablet-7in-hdpi-1024-dalvik-heap.mk)
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.heapstartsize=48m \
+    dalvik.vm.startheapsize=48m \
+    dalvik.vm.heapgrowthlimit=64m \
+    dalvik.vm.heapsize=174m \
+    dalvik.vm.heaptargetutilization=0.75 \
+    dalvik.vm.heapminfree=2m \
+    dalvik.vm.heapmaxfree=2m
+
+
+#streakOwner's recommended
+#dalvik.vm.dexopt-flags=v=n,o=v
+#dalvik.vm.dexopt-data-only=1
+
+#PRODUCT_PROPERTY_OVERRIDES += \
+#	pm.sleep_mode=1 \
+#	wifi.supplicant_scan_interval=180
+
+#PRODUCT_PROPERTY_OVERRIDES += \
+#	media.stagefright.enable-player=true \
+#	media.stagefright.enable-meta=true \
+#	media.stagefright.enable-scan=true \
+#	media.stagefright.enable-http=true \
+#	media.stagefright.enable-rtsp=true \
+#	media.stagefright.enable-record=false
+
+#PRODUCT_PROPERTY_OVERRIDES += \
+#	debug.sf.hw=1 \
+#	debug.performance.tuning=1 
+
+
+
+
 
 # Include exynos4 platform specific parts
 TARGET_HAL_PATH := hardware/samsung/exynos4/hal

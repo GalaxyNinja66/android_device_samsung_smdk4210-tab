@@ -26,7 +26,12 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_CFLAGS := -DALOG_TAG=\"Sensors\"
+
+ifneq ($(filter i815, $(TARGET_DEVICE)),)
+LOCAL_C_INCLUDES += hardware/invensense/60xx/libsensors
+else
 LOCAL_C_INCLUDES += hardware/invensense/libsensors
+endif
 LOCAL_SRC_FILES := \
 	sensors.cpp \
 	InputEventReader.cpp \
