@@ -311,10 +311,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 #	media.stagefright.enable-rtsp=true \
 #	media.stagefright.enable-record=false
 
-#PRODUCT_PROPERTY_OVERRIDES += \
-#	debug.sf.hw=1 \
-#	debug.performance.tuning=1 
-
+PRODUCT_PROPERTY_OVERRIDES += \
+	debug.sf.hw=1 \
+	debug.performance.tuning=1
+  
 
 
 
